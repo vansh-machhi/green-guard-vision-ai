@@ -6,7 +6,7 @@ const SampleResults = () => {
   const sampleDetections = [
     {
       id: 1,
-      image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
+      image: "/lovable-uploads/72c616ee-8d11-45d8-a0e2-6ba09b9fcfdb.png",
       cropType: "Tomato",
       healthStatus: "Late Blight",
       confidence: 94,
@@ -15,7 +15,7 @@ const SampleResults = () => {
     },
     {
       id: 2,
-      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&h=300&fit=crop",
+      image: "/lovable-uploads/e44c72f2-bb80-4896-9922-d5c98f6d2ced.png",
       cropType: "Potato",
       healthStatus: "Healthy",
       confidence: 97,
@@ -24,7 +24,7 @@ const SampleResults = () => {
     },
     {
       id: 3,
-      image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=400&h=300&fit=crop",
+      image: "/lovable-uploads/0850a791-342d-4535-b065-90cc09af3fb3.png",
       cropType: "Corn",
       healthStatus: "Northern Leaf Blight",
       confidence: 89,
@@ -33,7 +33,7 @@ const SampleResults = () => {
     },
     {
       id: 4,
-      image: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=300&fit=crop",
+      image: "/lovable-uploads/6507b8a2-99cb-4d22-a4ea-68feee934bad.png",
       cropType: "Wheat",
       healthStatus: "Rust Disease",
       confidence: 92,
@@ -42,7 +42,7 @@ const SampleResults = () => {
     },
     {
       id: 5,
-      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&h=300&fit=crop",
+      image: "/lovable-uploads/2e1ae1ef-9932-4d90-9c38-601eb1f94ab1.png",
       cropType: "Apple",
       healthStatus: "Healthy",
       confidence: 96,
