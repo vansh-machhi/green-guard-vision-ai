@@ -6,7 +6,7 @@ const SampleResults = () => {
   const sampleDetections = [
     {
       id: 1,
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
       cropType: "Tomato",
       healthStatus: "Late Blight",
       confidence: 94,
@@ -15,7 +15,7 @@ const SampleResults = () => {
     },
     {
       id: 2,
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&h=300&fit=crop",
       cropType: "Potato",
       healthStatus: "Healthy",
       confidence: 97,
@@ -24,7 +24,7 @@ const SampleResults = () => {
     },
     {
       id: 3,
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=400&h=300&fit=crop",
       cropType: "Corn",
       healthStatus: "Northern Leaf Blight",
       confidence: 89,
@@ -33,7 +33,7 @@ const SampleResults = () => {
     },
     {
       id: 4,
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=400&h=300&fit=crop",
       cropType: "Wheat",
       healthStatus: "Rust Disease",
       confidence: 92,
@@ -42,7 +42,7 @@ const SampleResults = () => {
     },
     {
       id: 5,
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&h=300&fit=crop",
       cropType: "Apple",
       healthStatus: "Healthy",
       confidence: 96,
@@ -94,6 +94,10 @@ const SampleResults = () => {
                   src={sample.image}
                   alt={`${sample.cropType} sample`}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                  }}
                 />
                 <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
                   {sample.cropType}
