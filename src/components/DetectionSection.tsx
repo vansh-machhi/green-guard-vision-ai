@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import ImageUpload from './ImageUpload';
 import LoadingSpinner from './LoadingSpinner';
 import ResultsDisplay from './ResultsDisplay';
-import { analyzeImageContent } from '../utils/cropValidation';
+import { analyzeImageContent, getRejectionReason } from '../utils/cropValidation';
+import { useToast } from "@/hooks/use-toast";
 
 interface DetectionResult {
   cropName: string;
@@ -21,6 +21,7 @@ const DetectionSection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<DetectionResult | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Enhanced mock results with more realistic crop disease data
   const mockResults: DetectionResult[] = [
@@ -92,39 +93,77 @@ const DetectionSection = () => {
 
   const handleImageSelect = async (file: File) => {
     setIsLoading(true);
+    console.log('=== IMAGE ANALYSIS STARTED ===');
+    console.log('File details:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      lastModified: new Date(file.lastModified).toISOString()
+    });
     
     try {
       // Create image URL for display
       const url = URL.createObjectURL(file);
       setImageUrl(url);
 
-      console.log('Starting image analysis...');
+      console.log('Starting enhanced image validation...');
       
-      // Validate if the image contains crops
+      // Enhanced image content analysis
       const imageAnalysis = await analyzeImageContent(file);
-      console.log('Image analysis result:', imageAnalysis);
+      console.log('=== VALIDATION RESULTS ===');
+      console.log('Analysis result:', imageAnalysis);
       
-      // Simulate AI processing time
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Simulate AI processing time with realistic delay
+      console.log('Processing image with AI model...');
+      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1500));
       
       if (!imageAnalysis.isValidCrop) {
-        console.log('Invalid crop image detected');
+        const rejectionReason = getRejectionReason(imageAnalysis);
+        console.log('=== IMAGE REJECTED ===');
+        console.log('Rejection reason:', rejectionReason);
+        
+        // Show toast notification for invalid image
+        toast({
+          title: "Invalid Image Detected",
+          description: "Please upload a valid crop image for analysis.",
+          variant: "destructive",
+        });
+        
         setResult({
           cropName: "",
           disease: "",
           confidence: 0,
           isHealthy: false,
           isValidCrop: false,
-          errorMessage: "Not Detectable – Please upload a valid crop image."
+          errorMessage: rejectionReason
         });
       } else {
-        console.log('Valid crop detected, proceeding with disease analysis...');
+        console.log('=== VALID CROP DETECTED ===');
+        console.log('Proceeding with disease analysis...');
+        
+        // Show success toast for valid crop
+        toast({
+          title: "Valid Crop Detected",
+          description: "Analyzing for diseases...",
+        });
+        
         // Randomly select a mock result for demonstration
         const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
+        console.log('Selected disease analysis result:', randomResult);
+        
         setResult(randomResult);
+        console.log('=== ANALYSIS COMPLETE ===');
       }
     } catch (error) {
-      console.error('Error analyzing image:', error);
+      console.error('=== ERROR IN IMAGE ANALYSIS ===');
+      console.error('Error details:', error);
+      
+      toast({
+        title: "Analysis Error",
+        description: "Failed to analyze image. Please try again.",
+        variant: "destructive",
+      });
+      
       setResult({
         cropName: "",
         disease: "",
@@ -135,6 +174,7 @@ const DetectionSection = () => {
       });
     } finally {
       setIsLoading(false);
+      console.log('=== IMAGE ANALYSIS SESSION ENDED ===');
     }
   };
 

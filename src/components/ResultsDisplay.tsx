@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { CheckCircle, AlertTriangle, Info, Shield, Zap, Target, XCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info, Shield, Zap, Target, XCircle, Camera, AlertCircle } from 'lucide-react';
 
 interface DetectionResult {
   cropName: string;
@@ -20,51 +19,85 @@ interface ResultsDisplayProps {
 }
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => {
-  // Handle invalid crop images
+  // Enhanced handling for invalid crop images
   if (result.isValidCrop === false) {
+    console.log('Displaying invalid image result:', result.errorMessage);
+    
     return (
       <div className="w-full max-w-4xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white">
+          {/* Enhanced header for invalid images */}
+          <div className="bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 p-6 text-white">
             <div className="flex items-center justify-center gap-4">
-              <XCircle className="h-8 w-8" />
+              <div className="bg-white/20 p-3 rounded-full">
+                <XCircle className="h-8 w-8" />
+              </div>
               <div className="text-center">
-                <h2 className="text-2xl font-bold">Invalid Image</h2>
-                <p className="text-white/90">Image validation failed</p>
+                <h2 className="text-2xl font-bold">Invalid Image Detected</h2>
+                <p className="text-white/90 mt-1">Only crop images can be analyzed</p>
               </div>
             </div>
           </div>
           
           <div className="p-6">
             <div className="grid md:grid-cols-2 gap-8">
+              {/* Image display with overlay */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Uploaded Image</h3>
-                <img
-                  src={imageUrl}
-                  alt="Invalid image"
-                  className="w-full h-64 object-cover rounded-xl shadow-lg"
-                />
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                  <Camera className="h-5 w-5" />
+                  Uploaded Image
+                </h3>
+                <div className="relative">
+                  <img
+                    src={imageUrl}
+                    alt="Rejected image"
+                    className="w-full h-64 object-cover rounded-xl shadow-lg opacity-75"
+                  />
+                  <div className="absolute inset-0 bg-red-500/20 rounded-xl flex items-center justify-center">
+                    <div className="bg-red-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
+                      NOT DETECTABLE
+                    </div>
+                  </div>
+                </div>
               </div>
               
-              <div className="space-y-6 flex items-center justify-center">
-                <div className="text-center p-8 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
-                  <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
-                    Not Detectable
+              {/* Enhanced error message */}
+              <div className="space-y-6 flex flex-col justify-center">
+                <div className="text-center p-8 bg-red-50 dark:bg-red-900/20 rounded-xl border-2 border-red-200 dark:border-red-800">
+                  <div className="bg-red-100 dark:bg-red-900/40 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                    <AlertCircle className="h-10 w-10 text-red-600 dark:text-red-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-red-700 dark:text-red-400 mb-3">
+                    Analysis Failed
                   </h3>
-                  <p className="text-red-600 dark:text-red-300 text-lg">
+                  <p className="text-red-600 dark:text-red-300 text-lg font-medium mb-4">
                     {result.errorMessage}
                   </p>
-                  <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Please ensure your image contains:
-                    </p>
-                    <ul className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-left">
-                      <li>• Crop plants or leaves</li>
-                      <li>• Agricultural vegetation</li>
-                      <li>• Clear, well-lit images</li>
-                      <li>• No humans, animals, or objects</li>
-                    </ul>
+                  
+                  {/* Guidelines for valid uploads */}
+                  <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700">
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                      <Info className="h-4 w-4" />
+                      Upload Guidelines
+                    </h4>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>✓ Crop plants and leaves</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>✓ Agricultural vegetation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>✓ Clear, well-lit images</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span>✗ Humans, animals, or objects</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
