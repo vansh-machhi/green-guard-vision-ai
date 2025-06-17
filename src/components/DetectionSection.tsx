@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import ImageUpload from './ImageUpload';
 import LoadingSpinner from './LoadingSpinner';
 import ResultsDisplay from './ResultsDisplay';
+import { analyzeImageContent } from '../utils/cropValidation';
 
 interface DetectionResult {
   cropName: string;
@@ -12,6 +13,8 @@ interface DetectionResult {
   symptoms?: string[];
   treatment?: string[];
   preventionTips?: string[];
+  isValidCrop?: boolean;
+  errorMessage?: string;
 }
 
 const DetectionSection = () => {
@@ -19,13 +22,14 @@ const DetectionSection = () => {
   const [result, setResult] = useState<DetectionResult | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  // Mock data for demonstration - In real app, this would come from your AI backend
+  // Enhanced mock results with more realistic crop disease data
   const mockResults: DetectionResult[] = [
     {
       cropName: "Tomato",
       disease: "Healthy",
       confidence: 94,
       isHealthy: true,
+      isValidCrop: true,
       preventionTips: [
         "Maintain proper soil drainage",
         "Ensure adequate spacing between plants",
@@ -38,6 +42,7 @@ const DetectionSection = () => {
       disease: "Late Blight",
       confidence: 87,
       isHealthy: false,
+      isValidCrop: true,
       symptoms: [
         "Dark brown or black lesions on leaves",
         "White fuzzy growth on leaf undersides",
@@ -63,6 +68,7 @@ const DetectionSection = () => {
       disease: "Northern Corn Leaf Blight",
       confidence: 91,
       isHealthy: false,
+      isValidCrop: true,
       symptoms: [
         "Cigar-shaped gray-green lesions",
         "Lesions turning tan with dark borders",
@@ -87,17 +93,49 @@ const DetectionSection = () => {
   const handleImageSelect = async (file: File) => {
     setIsLoading(true);
     
-    // Create image URL for display
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
+    try {
+      // Create image URL for display
+      const url = URL.createObjectURL(file);
+      setImageUrl(url);
 
-    // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Randomly select a mock result for demonstration
-    const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
-    setResult(randomResult);
-    setIsLoading(false);
+      console.log('Starting image analysis...');
+      
+      // Validate if the image contains crops
+      const imageAnalysis = await analyzeImageContent(file);
+      console.log('Image analysis result:', imageAnalysis);
+      
+      // Simulate AI processing time
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      if (!imageAnalysis.isValidCrop) {
+        console.log('Invalid crop image detected');
+        setResult({
+          cropName: "",
+          disease: "",
+          confidence: 0,
+          isHealthy: false,
+          isValidCrop: false,
+          errorMessage: "Not Detectable – Please upload a valid crop image."
+        });
+      } else {
+        console.log('Valid crop detected, proceeding with disease analysis...');
+        // Randomly select a mock result for demonstration
+        const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
+        setResult(randomResult);
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      setResult({
+        cropName: "",
+        disease: "",
+        confidence: 0,
+        isHealthy: false,
+        isValidCrop: false,
+        errorMessage: "Error analyzing image. Please try again."
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const resetDetection = () => {
@@ -107,16 +145,17 @@ const DetectionSection = () => {
   };
 
   return (
-    <section id="detect" className="py-20 bg-gradient-to-br from-gray-50 to-green-50/30">
+    <section id="detect" className="py-20 bg-gradient-to-br from-gray-50 to-green-50/30 dark:from-gray-900 dark:to-gray-800/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              AI Disease Detection
+              AI Crop Disease Detection System
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Upload an image of your crop and get instant AI-powered disease detection with treatment recommendations
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Upload an image of your crop and get instant AI-powered disease detection with treatment recommendations. 
+            Only agricultural crop images will be analyzed.
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CheckCircle, AlertTriangle, Info, Shield, Zap, Target } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info, Shield, Zap, Target, XCircle } from 'lucide-react';
 
 interface DetectionResult {
   cropName: string;
@@ -10,6 +10,8 @@ interface DetectionResult {
   symptoms?: string[];
   treatment?: string[];
   preventionTips?: string[];
+  isValidCrop?: boolean;
+  errorMessage?: string;
 }
 
 interface ResultsDisplayProps {
@@ -18,6 +20,62 @@ interface ResultsDisplayProps {
 }
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => {
+  // Handle invalid crop images
+  if (result.isValidCrop === false) {
+    return (
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white">
+            <div className="flex items-center justify-center gap-4">
+              <XCircle className="h-8 w-8" />
+              <div className="text-center">
+                <h2 className="text-2xl font-bold">Invalid Image</h2>
+                <p className="text-white/90">Image validation failed</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Uploaded Image</h3>
+                <img
+                  src={imageUrl}
+                  alt="Invalid image"
+                  className="w-full h-64 object-cover rounded-xl shadow-lg"
+                />
+              </div>
+              
+              <div className="space-y-6 flex items-center justify-center">
+                <div className="text-center p-8 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                  <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
+                    Not Detectable
+                  </h3>
+                  <p className="text-red-600 dark:text-red-300 text-lg">
+                    {result.errorMessage}
+                  </p>
+                  <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Please ensure your image contains:
+                    </p>
+                    <ul className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-left">
+                      <li>• Crop plants or leaves</li>
+                      <li>• Agricultural vegetation</li>
+                      <li>• Clear, well-lit images</li>
+                      <li>• No humans, animals, or objects</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Original results display for valid crops
   const getStatusIcon = () => {
     if (result.isHealthy) {
       return <CheckCircle className="h-8 w-8 text-green-600" />;
@@ -25,15 +83,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => 
     return <AlertTriangle className="h-8 w-8 text-amber-600" />;
   };
 
-  const getStatusColor = () => {
-    if (result.isHealthy) return 'green';
-    return 'amber';
-  };
-
   const getConfidenceColor = () => {
-    if (result.confidence >= 90) return 'text-green-600';
-    if (result.confidence >= 70) return 'text-amber-600';
-    return 'text-red-600';
+    if (result.confidence >= 90) return 'text-green-600 dark:text-green-400';
+    if (result.confidence >= 70) return 'text-amber-600 dark:text-amber-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const getConfidenceBarColor = () => {
@@ -45,20 +98,20 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* Main Result Card */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
         {/* Header */}
         <div className={`bg-gradient-to-r ${result.isHealthy ? 'from-green-500 to-emerald-600' : 'from-amber-500 to-orange-600'} p-6 text-white`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {getStatusIcon()}
               <div>
-                <h2 className="text-2xl font-bold">Analysis Complete</h2>
+                <h2 className="text-2xl font-bold">Detection Results</h2>
                 <p className="text-white/90">AI-powered crop health assessment</p>
               </div>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold">{result.confidence}%</div>
-              <div className="text-white/90 text-sm">Confidence</div>
+              <div className="text-white/90 text-sm">Confidence Level</div>
             </div>
           </div>
         </div>
@@ -68,45 +121,52 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Image */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800">Analyzed Image</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Analyzed Image</h3>
               <div className="relative">
                 <img
                   src={imageUrl}
                   alt="Analyzed crop"
                   className="w-full h-64 object-cover rounded-xl shadow-lg"
                 />
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800">
                   {result.cropName}
                 </div>
               </div>
             </div>
 
-            {/* Results */}
+            {/* Structured Results */}
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Detection Results</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Analysis Results</h3>
                 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
-                    <span className="font-medium text-gray-700">Crop Type</span>
-                    <span className="font-semibold text-gray-900">{result.cropName}</span>
+                  <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Crop Type</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{result.cropName}</span>
                   </div>
                   
-                  <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
-                    <span className="font-medium text-gray-700">Health Status</span>
-                    <span className={`font-semibold ${result.isHealthy ? 'text-green-600' : 'text-amber-600'}`}>
-                      {result.disease}
+                  <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Health Status</span>
+                    <span className={`font-semibold ${result.isHealthy ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      {result.isHealthy ? 'Healthy' : 'Diseased'}
                     </span>
                   </div>
+
+                  {!result.isHealthy && (
+                    <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Disease Name</span>
+                      <span className="font-semibold text-red-600 dark:text-red-400">{result.disease}</span>
+                    </div>
+                  )}
                   
-                  <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-gray-700">Confidence Level</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Confidence Level</span>
                       <span className={`font-semibold ${getConfidenceColor()}`}>
                         {result.confidence}%
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${getConfidenceBarColor()} transition-all duration-500`}
                         style={{ width: `${result.confidence}%` }}
@@ -125,18 +185,18 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Symptoms Card */}
           {result.symptoms && result.symptoms.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="bg-red-100 p-2 rounded-lg">
-                  <Info className="h-5 w-5 text-red-600" />
+                <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-lg">
+                  <Info className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800">Symptoms</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Symptoms</h3>
               </div>
               <ul className="space-y-2">
                 {result.symptoms.map((symptom, index) => (
                   <li key={index} className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700">{symptom}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{symptom}</span>
                   </li>
                 ))}
               </ul>
@@ -145,20 +205,20 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => 
 
           {/* Treatment Card */}
           {result.treatment && result.treatment.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="bg-blue-100 p-2 rounded-lg">
-                  <Shield className="h-5 w-5 text-blue-600" />
+                <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+                  <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800">Treatment</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Treatment</h3>
               </div>
               <ul className="space-y-2">
                 {result.treatment.map((step, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                    <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
                       {index + 1}
                     </div>
-                    <span className="text-gray-700">{step}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{step}</span>
                   </li>
                 ))}
               </ul>
@@ -169,18 +229,18 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result, imageUrl }) => 
 
       {/* Prevention Tips */}
       {result.preventionTips && result.preventionTips.length > 0 && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-6">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl border border-green-200 dark:border-green-800 p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-green-100 p-2 rounded-lg">
-              <Target className="h-5 w-5 text-green-600" />
+            <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">
+              <Target className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-800">Prevention Tips</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Prevention Tips</h3>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             {result.preventionTips.map((tip, index) => (
               <div key={index} className="flex items-start gap-2">
-                <Zap className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                <span className="text-gray-700">{tip}</span>
+                <Zap className="h-4 w-4 text-green-600 dark:text-green-400 mt-1 flex-shrink-0" />
+                <span className="text-gray-700 dark:text-gray-300">{tip}</span>
               </div>
             ))}
           </div>
